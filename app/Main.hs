@@ -45,9 +45,6 @@ instance Show BMI where
   show Obese2              = "Obese (Class II)"
   show Obese3              = "Obese (Class III)"
 
-data UnitSystem = Imperial | SI
-  deriving Show
-
 data HeightUnit = Inches Double | Centimeters Double | Meters Double | Mixed (Double,Double)
   deriving Show
 
