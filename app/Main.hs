@@ -124,11 +124,10 @@ die code = do
 
 parseArgs = getOpt RequireOrder []
 
-doBmi units = do
-  let (htStr:wtStr:_) = units
-      height = strToMeters htStr
-      weight = strToKilograms wtStr
-      bmiNum = bmiValue weight height
+doBmi height weight = do
+  let ht = strToMeters height
+      wt = strToKilograms weight
+      bmiNum = bmiValue wt ht
       bmiType = bmi bmiNum
   putStr $ printf "%.2f - " bmiNum
   print bmiType
@@ -136,6 +135,7 @@ doBmi units = do
 main = do
   argv <- getArgs
   case parseArgs argv of
-    ([], units, []) -> if (length units) == 2 then doBmi units else die 2
-    (opts, _, [])   -> die 1
-    (_, _, errs)    -> die 255
+    ([], (h:w:_), []) -> doBmi h w
+    ([], _, [])       -> die 2
+    (opts, _, [])     -> die 1
+    (_, _, errs)      -> die 255
