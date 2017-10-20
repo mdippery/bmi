@@ -1,6 +1,7 @@
-resolver: lts-6.10
-packages:
-- '.'
-extra-deps: []
 flags: {}
 extra-package-dbs: []
+packages:
+- .
+extra-deps:
+- split-0.2.3.2
+resolver: ghc-8.2.1

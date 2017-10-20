@@ -10,7 +10,6 @@ maintainer:          michael@monkey-robot.com
 copyright:           2016 Michael Dippery
 category:            Utilities
 build-type:          Simple
--- extra-source-files:
 cabal-version:       >=1.10
 
 executable bmi
