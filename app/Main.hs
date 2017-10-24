@@ -52,21 +52,21 @@ data WeightUnit = Pounds Double | Kilograms Double | Stone Double
   deriving Show
 
 class SILength a where
-  getMeters :: a -> Double
+  toMeters :: a -> Double
 
 class SIMass a where
-  getKilograms :: a -> Double
+  toKilograms :: a -> Double
 
 instance SILength HeightUnit where
-  getMeters (Inches n)         = n * 0.0254
-  getMeters (Centimeters n)    = n / 100.0
-  getMeters (Meters n)         = n
-  getMeters (Mixed (hft, hin)) = getMeters $ Inches (hft * 12 + hin)
+  toMeters (Inches n)         = n * 0.0254
+  toMeters (Centimeters n)    = n / 100.0
+  toMeters (Meters n)         = n
+  toMeters (Mixed (hft, hin)) = toMeters $ Inches (hft * 12 + hin)
 
 instance SIMass WeightUnit where
-  getKilograms (Pounds n)    = n / 2.2
-  getKilograms (Kilograms n) = n
-  getKilograms (Stone n)     = n * 6.35029
+  toKilograms (Pounds n)    = n / 2.2
+  toKilograms (Kilograms n) = n
+  toKilograms (Stone n)     = n * 6.35029
 
 strToDouble s = read s :: Double
 
@@ -79,18 +79,18 @@ splitMixed s = (f,i)
         i = chopUnits $ last $ splitOn "ft" s
 
 strToMeters s
-  | "ft" `isInfixOf`  s = Meters $ getMeters $ getMetersMixed $ splitMixed s
-  | "in" `isSuffixOf` s = Meters $ getMeters $ Inches s'
-  | "cm" `isSuffixOf` s = Meters $ getMeters $ Centimeters s'
-  | otherwise           = Meters $ getMeters $ Inches $ strToDouble s
+  | "ft" `isInfixOf`  s = Meters $ toMeters $ toMetersMixed $ splitMixed s
+  | "in" `isSuffixOf` s = Meters $ toMeters $ Inches s'
+  | "cm" `isSuffixOf` s = Meters $ toMeters $ Centimeters s'
+  | otherwise           = Meters $ toMeters $ Inches $ strToDouble s
   where s' = strToDouble $ chopUnits s
-        getMetersMixed (fStr, iStr) = Mixed (strToDouble fStr, strToDouble iStr)
+        toMetersMixed (fStr, iStr) = Mixed (strToDouble fStr, strToDouble iStr)
 
 strToKilograms s
-  | "lbs" `isSuffixOf` s = Kilograms $ getKilograms $ Pounds s'
-  | "st" `isSuffixOf`  s = Kilograms $ getKilograms $ Stone s'
+  | "lbs" `isSuffixOf` s = Kilograms $ toKilograms $ Pounds s'
+  | "st" `isSuffixOf`  s = Kilograms $ toKilograms $ Stone s'
   | "kg" `isSuffixOf`  s = Kilograms s'
-  | otherwise            = Kilograms $ getKilograms $ Pounds $ strToDouble s
+  | otherwise            = Kilograms $ toKilograms $ Pounds $ strToDouble s
   where s' = strToDouble $ chopUnits s
 
 bmiValue (Kilograms weight) (Meters height) = weight / (height ^ 2)
