@@ -132,7 +132,7 @@ doBmi height weight = do
 main = do
   argv <- getArgs
   case parseArgs argv of
-    ([], (h:w:_), []) -> doBmi h w
-    ([], _, [])       -> die 2
-    (opts, _, [])     -> die 1
-    (_, _, errs)      -> die 255
+    ([], h:w:_, []) -> doBmi h w
+    ([], _, [])     -> die 2
+    (opts, _, [])   -> die 1
+    (_, _, errs)    -> die 255
