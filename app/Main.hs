@@ -20,6 +20,7 @@
    SOFTWARE.
 -}
 
+import Control.Monad (liftM2)
 import Data.Char (isDigit)
 import Data.List (isInfixOf, isSuffixOf)
 import Data.List.Split (splitOn)
@@ -68,33 +69,38 @@ instance SIMass WeightUnit where
   toKilograms (Kilograms n) = n
   toKilograms (Stone n)     = n * 6.35029
 
-strToDouble s = read s :: Double
+formsDigit :: Char -> Bool
+formsDigit = liftM2 (||) isDigit ('.' ==)
 
-formsDigit c = isDigit c || c == '.'
-
+chopUnits :: String -> String
 chopUnits = takeWhile formsDigit
 
+splitMixed :: String -> (String, String)
 splitMixed s = (f,i)
   where f = chopUnits s
         i = chopUnits $ last $ splitOn "ft" s
 
+strToMeters :: String -> HeightUnit
 strToMeters s
   | "ft" `isInfixOf`  s = Meters $ toMeters $ toMetersMixed $ splitMixed s
   | "in" `isSuffixOf` s = Meters $ toMeters $ Inches s'
   | "cm" `isSuffixOf` s = Meters $ toMeters $ Centimeters s'
-  | otherwise           = Meters $ toMeters $ Inches $ strToDouble s
-  where s' = strToDouble $ chopUnits s
-        toMetersMixed (fStr, iStr) = Mixed (strToDouble fStr, strToDouble iStr)
+  | otherwise           = Meters $ toMeters $ Inches $ read s
+  where s' = read $ chopUnits s
+        toMetersMixed (fStr, iStr) = Mixed (read fStr, read iStr)
 
+strToKilograms :: String -> WeightUnit
 strToKilograms s
   | "lbs" `isSuffixOf` s = Kilograms $ toKilograms $ Pounds s'
   | "st" `isSuffixOf`  s = Kilograms $ toKilograms $ Stone s'
   | "kg" `isSuffixOf`  s = Kilograms s'
-  | otherwise            = Kilograms $ toKilograms $ Pounds $ strToDouble s
-  where s' = strToDouble $ chopUnits s
+  | otherwise            = Kilograms $ toKilograms $ Pounds $ read s
+  where s' = read $ chopUnits s
 
+bmiValue :: WeightUnit -> HeightUnit -> Double
 bmiValue (Kilograms weight) (Meters height) = weight / (height ^ 2)
 
+bmi :: (Ord a, Fractional a) => a -> BMI
 bmi n
   | n <= 16.5 = SeverelyUnderweight
   | n <= 18.5 = Underweight
@@ -104,6 +110,7 @@ bmi n
   | n <= 40.0 = Obese2
   | otherwise = Obese3
 
+usage :: IO ()
 usage = do
   progName <- getProgName
   putStrLn $ printf "Usage: %s height weight" progName
@@ -115,12 +122,15 @@ usage = do
   putStrLn "    pounds    - 120 or 120lbs"
   putStrLn "    kilograms - 54.43kg"
 
+die :: Int -> IO a
 die code = do
   usage
   exitWith (ExitFailure code)
 
+parseArgs :: [String] -> ([a], [String], [String])
 parseArgs = getOpt RequireOrder []
 
+doBmi :: String -> String -> IO ()
 doBmi height weight = do
   let ht = strToMeters height
       wt = strToKilograms weight
@@ -129,10 +139,11 @@ doBmi height weight = do
   putStr $ printf "%.2f - " bmiNum
   print bmiType
 
+main :: IO ()
 main = do
   argv <- getArgs
   case parseArgs argv of
     ([], h:w:_, []) -> doBmi h w
     ([], _, [])     -> die 2
-    (opts, _, [])   -> die 1
+    (_, _, [])      -> die 1
     (_, _, errs)    -> die 255
