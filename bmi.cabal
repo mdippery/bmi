@@ -1,5 +1,5 @@
 name:                bmi
-version:             1.0.0
+version:             1.0.0.0
 synopsis:            Calculates BMI
 description:         Calculates a person's body-mass index
 homepage:            https://github.com/githubuser/bmi
